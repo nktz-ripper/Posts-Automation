@@ -7,17 +7,23 @@ import pandas as pd
 import codecs
 from inputimeout import inputimeout, TimeoutOccurred
 
+current_date = datetime.now()
+year = current_date.year
+month = current_date.month
+day = current_date.day
+
+articles = ''
+title_list = []
+content_list = []
+urlToImage_list = []
+url_list = []
+pre_array = []
+df = ''
+q = '+(lei OR judicial OR impacto) AND (tecnologia OR inteligência artificial OR bitcoin OR cripto) AND (empresa OR empresario OR trabalho) NOT (review OR faculdades OR universidades OR saiba quem tem direito)'
+excludeDomains = 'megacurioso.com.br'
+
 
 def fetcher():
-    articles = ''
-    title_list = []
-    content_list = []
-    urlToImage_list = []
-    url_list = []
-    pre_array = []
-    df = ''
-
-
     current_date = datetime.now()
     year = current_date.year
     month = current_date.month
@@ -35,20 +41,33 @@ def fetcher():
 
         if month < 10:
             month = str(f'0{month}')
-    print(f'Today is {current_date}.....\n')
-    print(f'Search engine will scrape headlines from {day}/{month}/{year}\n')
+
+    newsapi_url = ('https://newsapi.org/v2/everything?'
+        'language=pt&'
+        #'category=technology'
+        #'domains=bbc.com&'
+        f'q={q}&'
+        'searchIn=description&'
+        #'domains=bbc.com&'
+        f'excludeDomains={excludeDomains}&'
+        f'from={year}-{month}-{day}&'
+        'sortBy=popularity&'
+        f'apiKey={newsapi_key}')
+    response = requests.get(newsapi_url)
+    if response.status_code == 200:
+        data = response.json()
+        articles = data.get('articles')
+        return articles
+    else:
+        print('News API Server Error:', response.status_code)
 
 
 #STANDARD SEARCH PARAMS
 
-    q = '+(lei OR judicial OR impacto) AND (tecnologia OR inteligência artificial OR bitcoin OR cripto) AND (empresa OR empresario OR trabalho) NOT (review OR faculdades OR universidades OR saiba quem tem direito)'
-    excludeDomains = 'megacurioso.com.br'
-    print(f'Would you like to personalize search paramaters?\nStandard are:\nKeywords: {q}\nIgnored Domains: {excludeDomains}.\n')
-    personalize = ''
-    if personalize == '':
-        try:
-            c = inputimeout(prompt='Press Any Key to personalize the keywords.\nProceeding in 5 seconds.....', timeout=5)
-            q_text = '''
+def alter_q():
+    try:
+        c = inputimeout(prompt='Press Any Key to personalize the keywords.\nProceeding in 5 seconds.....', timeout=5)
+        q_text = '''
 Keywords or phrases to search for in the article title and body.
 
 Advanced search is supported here:
@@ -60,89 +79,79 @@ Advanced search is supported here:
 - The complete value for q must be URL-encoded. Max length: 500 chars.
 
 Type your keywords: '''
-            q = input(q_text)
-        except TimeoutOccurred:
-            c = 'Timeout. No changes made. Proceeding.....'
-            print(c)
+        q = input(q_text)
+        return q
+    except TimeoutOccurred:
+        c = 'Timeout. No changes made. Proceeding.....'
+        print(c)
+        return q
 
-        try:
-            c = inputimeout(prompt='Press Any Key to personalize the ignored domains.\nProceeding in 5 seconds.....', timeout=5)
-            excludeDomains = input('A comma-seperated string of domains (eg bbc.co.uk, techcrunch.com, engadget.com) to remove from the results.')
-        except TimeoutOccurred:
-            c = 'Timeout. No changes made. Proceeding.....'
-            print(c)
-        else:
-            pass
+
+def alter_excludeDomains():
+    try:
+        c = inputimeout(prompt='Press Any Key to personalize the ignored domains.\nProceeding in 5 seconds.....', timeout=5)
+        excludeDomains = input('A comma-seperated string of domains (eg bbc.co.uk, techcrunch.com, engadget.com) to remove from the results.')
+    except TimeoutOccurred:
+        c = 'Timeout. No changes made. Proceeding.....'
+        print(c)
+    
 
 
     ### TOP HEADLINES SEARCH OPTION
-        try:
-            c = inputimeout(prompt='Press Any Key to search only "Top Headlines".\nProceeding to standard search 5 seconds.....', timeout=5)
-            newsapi_url = ('https://newsapi.org/v2/top-headlines?'
-                'country=br&'
-                'category=technology'
-                f'q={q}&'
-                f'apiKey={newsapi_key}')
-            response = requests.get(newsapi_url)
-            if response.status_code == 200:
-                data = response.json()
-                articles = data.get('articles')
-                print(articles)
-                print('News API search completed.....')
-            else:
-                print('News API Server Error:', response.status_code)
+def fetcher_topnews():
+    current_date = datetime.now()
+    year = current_date.year
+    month = current_date.month
+    day = current_date.day
+    if day < 3:
+        day = 30
+        month = month =- 1
+        if month < 1:
+            month = 12
+            year = year =- 1
+    else:
+        day = day =- 2
+        if day < 10:
+            day = str(f'0{month}')
 
-    ### STANDARD GET NEWS API
-        except TimeoutOccurred:
-            newsapi_url = ('https://newsapi.org/v2/everything?'
-                'language=pt&'
-                #'category=technology'
-                #'domains=bbc.com&'
-                f'q={q}&'
-                'searchIn=description&'
-                #'domains=bbc.com&'
-                f'excludeDomains={excludeDomains}&'
-                f'from={year}-{month}-{day}&'
-                'sortBy=popularity&'
-                f'apiKey={newsapi_key}')
-            response = requests.get(newsapi_url)
-            if response.status_code == 200:
-                data = response.json()
-                articles = data.get('articles')
-                print(articles)
-                print('News API search completed.....')
-            else:
-                print('News API Server Error:', response.status_code)
+        if month < 10:
+            month = str(f'0{month}')
+            
+    newsapi_url = ('https://newsapi.org/v2/top-headlines?'
+        'country=br&'
+        'category=technology'
+        f'q={q}&'
+        f'apiKey={newsapi_key}')
+    response = requests.get(newsapi_url)
+    if response.status_code == 200:
+        data = response.json()
+        articles = data.get('articles')
+        return articles
+    else:
+        print('News API Server Error:', response.status_code)
 
 
-
+def news_parser(articles):
     for title in articles:
         title_list.append(title['title'])
         content_list.append(title['content'])
         urlToImage_list.append(title['urlToImage'])
         url_list.append(title['url'])
-        
+
+    ### LIST OF LISTS    
     pre_array.append(title_list)
     pre_array.append(urlToImage_list)
     pre_array.append(url_list)
 
-    print('Processing URLs.....')
-
+    ### CONVERT LIST OF LISTS TO ARRAY
     df = pd.DataFrame(pre_array).transpose()
     df.columns = ['title', 'urlToImage', 'url']
-    print(df)
     df.to_csv(f'C:/Users/nktz/Meu Drive (nakasotovlogs@gmail.com)/Apps Coding/Posts Automation/Fetched CSVs/{current_date.year}.{current_date.month}.{current_date.day} - news.csv', ';')
 
-    print('saving CSV.....')
+    return df
 
-
-
-#       df = pandas.read_json(json.dumps(articles))
-#       df_simpler = df.drop(['source', 'author', 'content', 'publishedAt', 'urlToImage', 'description'], axis=1)
-#       print(df_simpler)
-
-#i have to get the content from the news api to parse in the rewriter
-
-
-#print('Saving to CSV.....')
-
+### PARSE URL NEWS TO RETURN VALUE TO TASKLIST_UPDATER    
+def get_url_list(articles):
+    for title in articles:
+        url_list.append(title['url'])
+    return url_list
