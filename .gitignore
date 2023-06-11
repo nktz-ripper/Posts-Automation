@@ -1,4 +1,7 @@
+client_secret_file.json
 constants.py
+id_fetcher.py
+backup.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
