@@ -19,6 +19,16 @@ scheduler.pyw - Python file that orchestrates everything. The .pyw makes it run 
 tasklist_updater - Has the functions to update the Google Tasks List.
 
 
+# How you can make it run
+
+a) You must have a 'constants.py' file with your 'newsapi_keys' specified.
+
+Reference: https://newsapi.org/docs/endpoints/everything
+
+b) You must have a Google Cloud configured, and place the 'client_secret_file.json' in the application folder.
+
+Reference: https://console.cloud.google.com/apis/library/tasks.googleapis.com?hl=pt-br
+
 
 # Work in progress
 
