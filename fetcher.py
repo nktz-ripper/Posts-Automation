@@ -1,4 +1,4 @@
-from constants import newsapi_key, editpad_key
+from constants import newsapi_key, editpad_key, q, domains
 
 import requests
 import json
@@ -19,8 +19,9 @@ urlToImage_list = []
 url_list = []
 pre_array = []
 df = ''
-q = '+(lei OR judicial OR impacto) AND (tecnologia OR inteligência artificial OR bitcoin OR cripto) AND (empresa OR empresario OR trabalho) NOT (review OR faculdades OR universidades OR saiba quem tem direito)'
-excludeDomains = 'megacurioso.com.br'
+
+
+#q = '+(lei OR judicial OR advogado OR juridico OR juiz OR desembargador OR justiça OR decisao OR multa OR punição) AND (tecnologia OR inteligência artificial OR bitcoin OR cripto OR gpt OR ethereum OR IA OR AI) AND (empresa OR empresario OR impacto OR negocios OR mercado OR crise OR economia OR setor) NOT (review OR faculdades OR universidades OR saiba quem tem direito OR formação)'
 
 
 def fetcher():
@@ -29,19 +30,19 @@ def fetcher():
     month = current_date.month
     day = current_date.day
     if day < 3:
-        day = 30
-        month = month =- 1
+        day = 28
+        month = month - 1
         if month < 1:
             month = 12
-            year = year =- 1
+            year = year - 1
     else:
-        day = day =- 2
+        day = day - 2
         if day < 10:
             day = str(f'0{month}')
 
         if month < 10:
             month = str(f'0{month}')
-
+    print(f'{year}, {month}, {day}')
     newsapi_url = ('https://newsapi.org/v2/everything?'
         'language=pt&'
         #'category=technology'
@@ -49,7 +50,7 @@ def fetcher():
         f'q={q}&'
         'searchIn=description&'
         #'domains=bbc.com&'
-        f'excludeDomains={excludeDomains}&'
+        f'Domains={domains}&'
         f'from={year}-{month}-{day}&'
         'sortBy=popularity&'
         f'apiKey={newsapi_key}')
@@ -99,18 +100,15 @@ def alter_excludeDomains():
 
     ### TOP HEADLINES SEARCH OPTION
 def fetcher_topnews():
-    current_date = datetime.now()
-    year = current_date.year
-    month = current_date.month
     day = current_date.day
     if day < 3:
-        day = 30
-        month = month =- 1
+        day = 28
+        month = month - 1
         if month < 1:
             month = 12
-            year = year =- 1
+            year = year - 1
     else:
-        day = day =- 2
+        day = day - 2
         if day < 10:
             day = str(f'0{month}')
 
